@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+:focus-visible { outline: 2px solid #fa2d48; outline-offset: 2px; }
+
+@layer components {
+  .field {
+    @apply w-full rounded-xl bg-white/10 px-4 py-3 text-sm outline-none ring-1 ring-white/10 placeholder:text-white/40 focus:ring-accent;
+  }
+  .range {
+    -webkit-appearance: none; appearance: none; height: 4px; border-radius: 9999px;
+    background: linear-gradient(to right, #fff var(--p, 0%), rgba(255, 255, 255, 0.2) var(--p, 0%));
+  }
+  .range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 9999px; background: #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5); }
+  .range::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 9999px; background: #fff; }
+  /* ambient album-art glow: --glow is set by AudioProvider */
+  .ambient {
+    position: fixed; top: -20vh; left: 50%; z-index: -1; width: 120vw; height: 70vh;
+    transform: translateX(-50%); border-radius: 9999px; pointer-events: none;
+    background: var(--glow, #fa2d48); opacity: 0.22; filter: blur(120px);
+    transition: background-color 1.2s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
