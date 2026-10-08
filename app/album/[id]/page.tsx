@@ -3,7 +3,7 @@ import { notFound, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { useAudio } from "@/context/AudioContext";
-import { albumTracks, getAlbum, SPEC } from "@/lib/data";
+import { albumTracks, getAlbum } from "@/lib/data";
 import Cover from "@/components/Cover";
 import TrackItem from "@/components/TrackItem";
 
@@ -13,22 +13,21 @@ export default function AlbumPage() {
   const album = getAlbum(id);
   if (!album) return notFound();
   const list = albumTracks(id);
+  const meta = [album.artist, album.year, `${list.length} ${list.length === 1 ? "track" : "tracks"}`].filter(Boolean).join(", ");
 
   return (
     <div>
       <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-end">
         <motion.div
           initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          className="rounded-2xl" style={{ boxShadow: `0 30px 100px -30px ${album.color}` }}
+          className="rounded-2xl" style={{ boxShadow: "0 30px 100px -30px var(--glow)" }}
         >
-          <Cover color={album.color} src={album.cover} className="h-60 w-60 rounded-2xl sm:h-64 sm:w-64">
-            <span className="absolute bottom-3 left-4 text-5xl font-black text-white/90">{album.decade}</span>
-          </Cover>
+          <Cover color={album.color} src={album.cover} className="h-60 w-60 rounded-2xl sm:h-64 sm:w-64" />
         </motion.div>
         <div className="text-center sm:text-left">
-          <span className="glass inline-block rounded-full px-3 py-1 text-xs font-medium">{SPEC}</span>
+          <span className="glass inline-block rounded-full px-3 py-1 text-xs font-medium">{list[0].spec}</span>
           <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{album.title}</h1>
-          <p className="mt-1 text-white/60">{album.artist}, {album.year}, {list.length} tracks</p>
+          <p className="mt-1 text-white/60">{meta}</p>
           <button onClick={() => play(list[0], list)} className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-semibold">
             <Play className="h-5 w-5 fill-white" /> Play
           </button>

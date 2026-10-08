@@ -1,27 +1,36 @@
-export type Track = { id: string; title: string; artist: string; albumId: string; duration: string; color: string; cover?: string; original: string; remastered: string };
-export type Album = { id: string; title: string; decade: string; artist: string; year: number; color: string; cover?: string };
+import library from "./library.json";
 
-export const SPEC = "24-bit / 48kHz HD Remaster";
+export type Track = {
+  id: string; title: string; artist: string; album: string; albumId: string; year?: number; genre?: string;
+  duration: string; color: string; cover?: string; original?: string; remastered: string;
+  spec: string; quality: string; details: [string, string][];
+};
+export type Album = { id: string; title: string; decade: string; artist: string; year?: number; color: string; cover?: string };
 
-export const albums: Album[] = [
-  { id: "70s-classics", title: "70s Classics", decade: "70s", artist: "Various Artists", year: 1975, color: "#f97316" },
-  { id: "80s-hits", title: "80s Hits", decade: "80s", artist: "Various Artists", year: 1985, color: "#ec4899" },
-  { id: "90s-nostalgia", title: "90s Nostalgia", decade: "90s", artist: "Various Artists", year: 1995, color: "#22d3ee" },
-];
+// shape written by scripts/meta.mjs
+type Raw = {
+  id: string; albumId: string; file: string; original?: string; cover?: string; title: string; artist: string;
+  album: string; year?: number; genre?: string; seconds: number; bits: number; rate: number; details: [string, string][];
+};
 
-const mk = (n: number, a: Album, title: string, duration: string): Track => ({
-  id: `${a.id}-${n}`, title, artist: "Retro Artist", albumId: a.id, duration, color: a.color,
-  original: `/audio/original/${a.id}-${n}.mp3`,
-  remastered: `/audio/remastered/${a.id}-${n}.mp3`,
+export const fmt = (s: number) =>
+  isFinite(s) && s > 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";
+
+export const tracks: Track[] = (library as unknown as Raw[]).map((r) => {
+  const khz = +(r.rate / 1000).toFixed(1);
+  return {
+    id: r.id, title: r.title, artist: r.artist, album: r.album, albumId: r.albumId, year: r.year, genre: r.genre,
+    duration: fmt(r.seconds), color: "#fa2d48", cover: r.cover, original: r.original, remastered: r.file,
+    spec: `${r.bits}-bit / ${khz}kHz ${r.bits >= 24 ? "HD" : "Lossless"} Remaster`,
+    quality: `${r.bits}-bit / ${khz}kHz FLAC`,
+    details: r.details,
+  };
 });
 
-export const tracks: Track[] = [
-  mk(1, albums[0], "Golden Highway", "3:42"), mk(2, albums[0], "Velvet Nights", "4:05"),
-  mk(1, albums[1], "Neon Heartbeat", "3:55"), mk(2, albums[1], "Midnight Cassette", "4:12"),
-  mk(1, albums[2], "Pager Dreams", "3:31"), mk(2, albums[2], "Summer Dial-Up", "4:20"),
-];
+export const albums: Album[] = [...new Map(tracks.map((t) => [t.albumId, t])).values()].map((t) => ({
+  id: t.albumId, title: t.album, artist: t.artist, year: t.year, cover: t.cover, color: t.color,
+  decade: t.year ? (t.year >= 2000 ? `${Math.floor(t.year / 10) * 10}s` : `${Math.floor(t.year / 10) % 10}0s`) : "",
+}));
 
 export const getAlbum = (id: string) => albums.find((a) => a.id === id);
 export const albumTracks = (id: string) => tracks.filter((t) => t.albumId === id);
-export const fmt = (s: number) =>
-  isFinite(s) && s > 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";

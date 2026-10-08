@@ -34,7 +34,7 @@ export default function PlayerModal() {
           initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 32, stiffness: 300 }}
           className="fixed inset-0 z-50 overflow-y-auto bg-base"
-          style={{ backgroundImage: `linear-gradient(180deg, ${track.color}66, #0d0d0d 75%)` }}
+          style={{ backgroundImage: "linear-gradient(180deg, color-mix(in srgb, var(--glow) 45%, transparent), #0d0d0d 75%)" }}
         >
           <div className="mx-auto flex min-h-full max-w-md flex-col px-6 pb-8">
             <div className="flex items-center py-3">
@@ -51,7 +51,7 @@ export default function PlayerModal() {
               animate={{ scale: isPlaying ? 1 : 0.82 }}
               transition={{ type: "spring", stiffness: 220, damping: 20 }}
               className="rounded-2xl"
-              style={{ boxShadow: `0 40px 120px -30px ${track.color}` }}
+              style={{ boxShadow: "0 40px 120px -30px var(--glow)" }}
             >
               <Cover color={track.color} src={track.cover} className="aspect-square w-full rounded-2xl" />
             </motion.div>
@@ -61,6 +61,7 @@ export default function PlayerModal() {
               <p className="truncate text-lg text-white/60">{track.artist}</p>
             </div>
 
+            {track.original ? (
             <div className="glass mt-6 flex rounded-2xl p-1" role="group" aria-label="Audio version">
               {modes.map((m) => (
                 <button key={m.id} onClick={() => setVersion(m.id)} aria-pressed={version === m.id} className="relative flex-1 rounded-xl px-2 py-2.5 text-center">
@@ -72,10 +73,13 @@ export default function PlayerModal() {
                     />
                   )}
                   <span className="relative block text-[13px] font-semibold leading-tight">{m.label}</span>
-                  <span className="relative block text-[11px] text-white/70">{m.spec}</span>
+                  <span className="relative block text-[11px] text-white/70">{m.id === "remastered" ? track.quality : m.spec}</span>
                 </button>
               ))}
             </div>
+            ) : (
+              <div className="glass mt-6 rounded-2xl p-3 text-center text-sm font-semibold">{track.spec}</div>
+            )}
 
             <div className="mt-6">
               <Range label="Seek" value={time} max={duration} onChange={seek} />

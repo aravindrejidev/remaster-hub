@@ -36,8 +36,27 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => { if (ref.current) ref.current.volume = volume; }, [volume]);
+  // ambient glow = average colour of the cover art (falls back to the accent colour)
   useEffect(() => {
-    document.documentElement.style.setProperty("--glow", track?.color ?? "#fa2d48");
+    const root = document.documentElement.style;
+    root.setProperty("--glow", track?.color ?? "#fa2d48");
+    if (!track?.cover) return;
+    let dead = false;
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 8;
+      const x = c.getContext("2d");
+      if (!x || dead) return;
+      x.drawImage(img, 0, 0, 8, 8);
+      const d = x.getImageData(0, 0, 8, 8).data;
+      let r = 0, g = 0, b = 0;
+      for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+      const n = d.length / 4;
+      root.setProperty("--glow", `rgb(${Math.round(r / n)}, ${Math.round(g / n)}, ${Math.round(b / n)})`);
+    };
+    img.src = track.cover;
+    return () => { dead = true; };
   }, [track]);
 
   const toggle = () => {
@@ -76,14 +95,16 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setVer(v);
   };
 
+  const ver: Version = track?.original ? version : "remastered";
+
   return (
     <AudioCtx.Provider
-      value={{ track, isPlaying, time, duration, volume, version, expanded, play, toggle, step, seek, setVolume, setVersion, setExpanded }}
+      value={{ track, isPlaying, time, duration, volume, version: ver, expanded, play, toggle, step, seek, setVolume, setVersion, setExpanded }}
     >
       <MotionConfig reducedMotion="user">{children}</MotionConfig>
       <audio
         ref={ref}
-        src={track?.[version]}
+        src={track ? (ver === "original" ? track.original : track.remastered) : undefined}
         preload="metadata"
         onLoadedMetadata={(e) => {
           const a = e.currentTarget;
