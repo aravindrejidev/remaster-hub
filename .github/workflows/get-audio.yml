@@ -21,7 +21,8 @@ jobs:
           mkdir -p "$(dirname "$OUT")"
           if [[ "$URL" == *drive.google.com* ]]; then
             pip install -q --break-system-packages gdown
-            gdown --fuzzy "$URL" -O "$OUT"
+            ID=$(echo "$URL" | sed -E 's#.*/d/([^/?]+).*#\1#; s#.*[?&]id=([^&]+).*#\1#')
+            gdown "$ID" -O "$OUT"
           else
             curl -fL "${URL/dl=0/dl=1}" -o "$OUT"
           fi
